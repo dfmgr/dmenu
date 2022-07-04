@@ -102,8 +102,12 @@ while :; do
 done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Additional variables
-BUILD_DESTDIR="${BUILD_DESTDIR:-/usr/local}"
-BUILD_SRC_DIR="${BUILD_SRC_DIR:-$HOME/.local/share/dmenu}"
+if command -v dmenu | grep -q '^/bin' || command -v dmenu | grep -q '^/usr/bin'; then
+  BUILD_DESTDIR="/usr"
+else
+  BUILD_DESTDIR="${BUILD_DESTDIR:-/usr/local}"
+fi
+BUILD_SRC_DIR="${BUILD_SRC_DIR:-$HOME/.local/share/dmenu/dmenu-distrotube}"
 BUILD_LOG_FILE="${BUILD_LOG_FILE:-/tmp/dmenu_build.log}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Main application
