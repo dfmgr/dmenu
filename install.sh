@@ -140,8 +140,7 @@ if am_i_online; then
     if [ -d "$PLUGDIR/dmenu-distrotube/.git" ]; then
       execute "git_update $PLUGDIR/dmenu-distrotube" "Updating plugin dmenu-distrotube"
     else
-      execute
-      "git_clone https://gitlab.com/dwt1/dmenu-distrotube $PLUGDIR/dmenu-distrotube" "Installing plugin dmenu-distrotube"
+      execute "git_clone https://gitlab.com/dwt1/dmenu-distrotube $PLUGDIR/dmenu-distrotube" "Installing plugin dmenu-distrotube"
     fi
   fi
   # exit on fail
