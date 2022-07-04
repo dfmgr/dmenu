@@ -5,7 +5,7 @@
 #### Requires scripts to be installed
 
 ```shell
-sudo bash -c "$(curl -LSs "https://github.com/dfmgr/installer/raw/main/install.sh")" && sudo dfmgr install installer
+sudo bash -c "$(curl -q -LSs "https://github.com/dfmgr/installer/raw/main/install.sh")" && sudo dfmgr install installer
 ```
 
 ### Automatic install/update
@@ -17,7 +17,7 @@ dfmgr install dmenu
 OR
 
 ```shell
-bash -c "$(curl -LSs "https://github.com/dfmgr/dmenu/raw/main/install.sh")"
+bash -c "$(curl -q -LSs "https://github.com/dfmgr/dmenu/raw/main/install.sh")"
 ```
   
 requirements:
