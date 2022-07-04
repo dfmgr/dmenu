@@ -60,7 +60,7 @@ REPORAW="$REPO/raw/$REPO_BRANCH"
 APPVERSION="$(__appversion "$REPORAW/version.txt")"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Setup plugins
-PLUGNAMES="dmenu-distrotube"
+PLUGNAMES="source"
 PLUGDIR="${SHARE:-$HOME/.local/share}/$APPNAME"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Require a version higher than
@@ -137,10 +137,10 @@ fi
 # Plugins
 if am_i_online; then
   if [ "$PLUGNAMES" != "" ]; then
-    if [ -d "$PLUGDIR/dmenu-distrotube/.git" ]; then
-      execute "git_update $PLUGDIR/dmenu-distrotube" "Updating plugin dmenu-distrotube"
+    if [ -d "$PLUGDIR/source/.git" ]; then
+      execute "git_update $PLUGDIR/source" "Updating plugin source"
     else
-      execute "git_clone https://gitlab.com/dwt1/dmenu-distrotube $PLUGDIR/dmenu-distrotube" "Installing plugin dmenu-distrotube"
+      execute "git_clone https://gitlab.com/dwt1/dmenu-distrotube $PLUGDIR/source" "Installing plugin source"
     fi
   fi
   # exit on fail
@@ -150,9 +150,11 @@ fi
 # run post install scripts
 run_postinst() {
   dfmgr_run_post
-  if ! cmd_exits dmenu && [[ -f "$INSTDIR/build.sh" ]]; then
-    if builtin cd "$PLUGDIR/dmenu-distrotube"; then
-      export BUILD_SRC_DIR="$PLUGDIR/dmenu-distrotube"
+  if ! cmd_exits "$APPNAME" && [[ -f "$INSTDIR/build.sh" ]]; then
+    if builtin cd "$PLUGDIR/source"; then
+      BUILD_SRC_DIR="$PLUGDIR/source"
+      BUILD_SRC_URL="https://gitlab.com/dwt1/dmenu-distrotube"
+      export BUILD_SRC_DIR BUILD_SRC_URL
       eval "$INSTDIR/build.sh"
     fi
   fi
