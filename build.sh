@@ -121,7 +121,7 @@ if [[ -d "$BUILD_SRC_DIR" ]]; then
       sed -i 's|#include "colors/dracula.h"|#include "colors/doom-one.h"|g' "./config.def.h"
   fi
   if [[ -f "Makefile" ]]; then
-    sudo make clean install DESTDIR="$BUILD_DESTDIR" | tee -a "$BUILD_LOG_FILE" &>/dev/null
+    sudo make clean install DESTDIR="$BUILD_DESTDIR" 2>&1 | tee -a "$BUILD_LOG_FILE" &>/dev/null
   fi
   if [[ -f "$BUILD_LOG_FILE" ]]; then
     errors="$(grep 'fatal error' "$BUILD_LOG_FILE" || echo '')"
