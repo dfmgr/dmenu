@@ -150,7 +150,7 @@ fi
 # run post install scripts
 run_postinst() {
   dfmgr_run_post
-  if ! cmd_exits dmenu; then
+  if ! cmd_exits dmenu && [[ -f "$INSTDIR/build.sh" ]]; then
     if builtin cd "$PLUGDIR/dmenu-distrotube"; then
       export BUILD_SRC_DIR="$PLUGDIR/dmenu-distrotube"
       eval "$INSTDIR/build.sh"
