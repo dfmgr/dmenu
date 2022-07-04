@@ -82,7 +82,7 @@ while :; do
     ;;
   --options)
     shift 1
-    [ -n "$1" ] || printf "Current options for ${PROG:-$APPNAME}\n"
+    [ -n "$1" ] || printf_color "$PURPLE" "Current options for ${PROG:-$APPNAME}\n"
     [ -z "$SHORTOPTS" ] || __list_options "Short Options" "-$SHORTOPTS" ',' '-'
     [ -z "$LONGOPTS" ] || __list_options "Long Options" "--$LONGOPTS" ',' '--'
     [ -z "$ARRAY" ] || __list_options "Base Options" "$ARRAY" ',' ''
