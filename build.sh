@@ -129,6 +129,7 @@ if [[ -d "$BUILD_SRC_DIR" ]]; then
       printf_color "$RED" "The following errors have occurred:"
       echo -e "$errors"
     else
+      rm -Rf "$BUILD_LOG_FILE" &>/dev/null
       printf_color "$GREEN" "Build of dmenu has completed without error"
     fi
   fi
