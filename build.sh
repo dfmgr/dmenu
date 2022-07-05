@@ -6,12 +6,12 @@
 # @License       : LICENSE.md
 # @ReadME        : build.sh --help
 # @Copyright     : Copyright: (c) 2022 Jason Hempstead, Casjays Developments
-# @Created       : Tuesday, Jul 05, 2022 07:23 EDT
+# @Created       : Tuesday, Jul 05, 2022 07:54 EDT
 # @File          : build.sh
 # @Description   : Installer script for dmenu
-# @TODO          : 
-# @Other         : 
-# @Resource      : 
+# @TODO          :
+# @Other         :
+# @Resource      :
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="$(basename "$0")"
 VERSION="202207042113-git"
@@ -196,7 +196,7 @@ done
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Additional variables
 BUILD_NAME="dmenu"
-BUILD_SRC_URL="${BUILD_SRC_URL:-}"
+BUILD_SRC_URL="${BUILD_SRC_URL:-https://gitlab.com/dwt1/dmenu-distrotube}"
 BUILD_SRC_DIR="${BUILD_SRC_DIR:-$HOME/.local/share/$BUILD_NAME/source}"
 BUILD_LOG_FILE="${BUILD_LOG_FILE:-/tmp/${BUILD_NAME}_build.log}"
 if command -v "$BUILD_NAME" | grep -q '^/bin' || command -v "$BUILD_NAME" | grep -q '^/usr/bin'; then
