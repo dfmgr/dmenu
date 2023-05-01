@@ -1,17 +1,13 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-# shellcheck disable=SC2317
-# shellcheck disable=SC2120
-# shellcheck disable=SC2155
-# shellcheck disable=SC2199
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-##@Version           :  202207042113-git
+##@Version           :  202304292251-git
 # @@Author           :  Jason Hempstead
 # @@Contact          :  jason@casjaysdev.com
 # @@License          :  LICENSE.md
 # @@ReadME           :  build.sh --help
 # @@Copyright        :  Copyright: (c) 2023 Jason Hempstead, Casjays Developments
-# @@Created          :  Tuesday, Apr 25, 2023 16:40 EDT
+# @@Created          :  Sunday, Apr 30, 2023 23:07 EDT
 # @@File             :  build.sh
 # @@Description      :
 # @@Changelog        :  New script
@@ -22,16 +18,44 @@
 # @@sudo/root        :  no
 # @@Template         :  other/build
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# shellcheck disable=SC2317
+# shellcheck disable=SC2120
+# shellcheck disable=SC2155
+# shellcheck disable=SC2199
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 APPNAME="dmenu"                      # Set build name
 BUILD_NAME="${BUILD_NAME:-$APPNAME}" # Set build name
-VERSION="202207042113-git"           # Set version
+VERSION="202304292251-git"           # Set version
 USER="${SUDO_USER:-${USER}}"         # Set username
 HOME="${USER_HOME:-${HOME}}"         # Set home Directory
 SCRIPT_SRC_DIR="${BASH_SOURCE%/*}"   # Set the dir to script
 PATH="${PATH//:./}"                  # Remove . from path
+SET_BUILD_SRC_URL="$BUILD_SRC_URL"   # Set url to git repo
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Set variables
+exitCode=10
+NC="$(tput sgr0 2>/dev/null)"
+RESET="$(tput sgr0 2>/dev/null)"
+BLACK="\033[0;30m"
+RED="\033[1;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[0;33m"
+BLUE="\033[0;34m"
+PURPLE="\033[0;35m"
+CYAN="\033[0;36m"
+WHITE="\033[0;37m"
+ORANGE="\033[0;33m"
+LIGHTRED='\033[1;31m'
+BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
+BG_RED="\[$(tput setab 9 2>/dev/null)\]"
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+DMENU_LOG_DIR="${DMENU_LOG_DIR:-$HOME/.local/log/builds}"                               #
+BUILD_SCRIPT_SRC_DIR="${BUILD_SCRIPT_SRC_DIR:-$HOME/.local/share/${BUILD_NAME}/source}" # set the source dir
+BUILD_LOG_FILE="${BUILD_LOG_FILE:-$DMENU_LOG_DIR/${BUILD_NAME}_build.log}"              # set log files
+BUILD_LOG_DIR="$(dirname "$BUILD_LOG_FILE")"                                            # get the log directory
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Set bash options
-trap 'exitCode=${exitCode:-0};[ -n "$BUILD_SH_TEMP_FILE" ] && [ -f "$BUILD_SH_TEMP_FILE" ] && rm -Rf "$BUILD_SH_TEMP_FILE" |&__devnull;exit ${exitCode:-0}' EXIT
+trap 'exitCode=${exitCode:-0};[ -n "$DMENU_TEMP_FILE" ] && [ -f "$DMENU_TEMP_FILE" ] && rm -Rf "$DMENU_TEMP_FILE" |&__devnull;exit ${exitCode:-0}' EXIT
 [ "$1" == "--debug" ] && set -xo pipefail && export SCRIPT_OPTS="--debug" && export _DEBUG="on"
 [ "$1" == "--raw" ] && export SHOW_RAW="true"
 set -Eo pipefail
@@ -39,7 +63,7 @@ set -Eo pipefail
 # Set functions
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __logr() {
-  eval "$*" 2>"$BUILD_SH_LOG_DIR/$APPNAME.log.err" >"$BUILD_SH_LOG_DIR/$APPNAME.log"
+  eval "$*" 2>"$DMENU_LOG_DIR/$APPNAME.log.err" >"$DMENU_LOG_DIR/$APPNAME.log"
   return $?
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +84,7 @@ __devnull2() {
 __cmd_exists() {
   [ -n "$1" ] && local exitCode="" || return 0
   for cmd in "$@"; do
-    builtin command -v "$cmd" &>/dev/null && exitCode+=0 || exitCode+=1
+    builtin type -P "$cmd" &>/dev/null && exitCode+=0 || exitCode+=1
   done
   [ $exitCode -eq 0 ] || exitCode=3
   return ${exitCode:-0}
@@ -81,21 +105,21 @@ else
 fi
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # output version
-__version() { echo -e ''${GREEN:-}"$VERSION"${NC:-}; }
+__version() { printf '%b\n' "${GREEN:-}$VERSION${NC:-}"; }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # send notifications
 __notifications() {
   __cmd_exists notifications || return
-  [ "$BUILD_SH_NOTIFY_ENABLED" = "yes" ] || return
+  [ "$DMENU_NOTIFY_ENABLED" = "yes" ] || return
   [ "$SEND_NOTIFICATION" = "no" ] && return
   (
     set +x
     export SCRIPT_OPTS="" _DEBUG=""
-    export NOTIFY_GOOD_MESSAGE="${NOTIFY_GOOD_MESSAGE:-$BUILD_SH_GOOD_MESSAGE}"
-    export NOTIFY_ERROR_MESSAGE="${NOTIFY_ERROR_MESSAGE:-$BUILD_SH_ERROR_MESSAGE}"
-    export NOTIFY_CLIENT_ICON="${NOTIFY_CLIENT_ICON:-$BUILD_SH_NOTIFY_CLIENT_ICON}"
-    export NOTIFY_CLIENT_NAME="${NOTIFY_CLIENT_NAME:-$BUILD_SH_NOTIFY_CLIENT_NAME}"
-    export NOTIFY_CLIENT_URGENCY="${NOTIFY_CLIENT_URGENCY:-$BUILD_SH_NOTIFY_CLIENT_URGENCY}"
+    export NOTIFY_GOOD_MESSAGE="${NOTIFY_GOOD_MESSAGE:-$DMENU_GOOD_MESSAGE}"
+    export NOTIFY_ERROR_MESSAGE="${NOTIFY_ERROR_MESSAGE:-$DMENU_ERROR_MESSAGE}"
+    export NOTIFY_CLIENT_ICON="${NOTIFY_CLIENT_ICON:-$DMENU_NOTIFY_CLIENT_ICON}"
+    export NOTIFY_CLIENT_NAME="${NOTIFY_CLIENT_NAME:-$DMENU_NOTIFY_CLIENT_NAME}"
+    export NOTIFY_CLIENT_URGENCY="${NOTIFY_CLIENT_URGENCY:-$DMENU_NOTIFY_CLIENT_URGENCY}"
     notifications "$@"
     retval=$?
     return $retval
@@ -123,6 +147,7 @@ __make_build() {
   local exitCode_make="0"
   local exitCode_cmake="0"
   local exitCode_configure="0"
+  __execute_pre_build
   if [ -f "$BUILD_SCRIPT_SRC_DIR/CMakeLists.txt" ]; then
     mkdir -p "$BUILD_SCRIPT_SRC_DIR/build" && cd "$BUILD_SCRIPT_SRC_DIR/build" || exit 10
     cmake $CMAKE_ARGS 2>&1 | tee -a "$BUILD_LOG_FILE" |& __devnull || exitCode+=1
@@ -214,42 +239,42 @@ __packages() {
     printf_color "Installing required packages" "$BLUE"
     if __cmd_exists pkmgr; then
       for pkg in $PACKAGE_LIST; do
-        pkmgr silent install "$pkg" |& __devnull
+        pkmgr silent install "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists apt; then
       for pkg in $PACKAGE_LIST; do
-        apt install -yy "$pkg" |& __devnull
+        apt install -yy "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists pacman; then
       for pkg in $PACKAGE_LIST $PACMAN; do
-        pacman -S --noconfirm "$pkg" |& __devnull
+        pacman -S --noconfirm "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists apt-get; then
       for pkg in $PACKAGE_LIST $APT; do
-        apt-get install -yy "$pkg" |& __devnull
+        apt-get install -yy "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists apt-get; then
       for pkg in $PACKAGE_LIST $APT; do
-        apt-get install -yy "$pkg" |& __devnull
+        apt-get install -yy "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists dnf; then
       for pkg in $PACKAGE_LIST $YUM; do
-        dnf install -yy "$pkg" |& __devnull
+        dnf install -yy "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists yum; then
       for pkg in $PACKAGE_LIST $YUM; do
-        yum install -yy "$pkg" |& __devnull
+        yum install -yy "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     elif __cmd_exists apk; then
       for pkg in $PACKAGE_LIST $APK; do
-        apk add "$pkg" |& __devnull
+        apk add "$pkg" |& __devnull && true || false
         [ $? = 0 ] && __logr "Installed $pkg" || { exitCode=$((exitCode + 1)) && __logr "Warning: Failed to installed $pkg"; }
       done
     fi
@@ -259,7 +284,9 @@ __packages() {
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 __init() {
+  BUILD_SRC_URL="${BUILD_SRC_URL:-$SET_BUILD_SRC_URL}"
   BUILD_BIN="$(builtin type -P "$BUILD_NAME" || echo "$BUILD_NAME")"
+  [ -d "$BUILD_LOG_DIR" ] || mkdir -p "$BUILD_LOG_DIR"
   if [ -z "$BUILD_FORCE" ] && __cmd_exists "$BUILD_NAME"; then
     printf_color "$BUILD_NAME is already installed at: ${GREEN}$BUILD_BIN${NC}" "$RED" 1>&2
     printf_color "run with --force to rebuild" "$YELLOW" 1>&2
@@ -279,29 +306,15 @@ __init() {
   fi
 }
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+__execute_pre_build() {
+  local statusCode=0
+
+  return $statusCode
+}
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Check for needed applications
 __cmd_exists bash || { printf_color "Missing: bash" "$RED" && exit 1; }
 __cmd_exists make || { printf_color "Missing: make" "$RED" && exit 1; }
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Set variables
-exitCode=10
-NC="$(tput sgr0 2>/dev/null)"
-RESET="$(tput sgr0 2>/dev/null)"
-BLACK="\033[0;30m"
-RED="\033[1;31m"
-GREEN="\033[0;32m"
-YELLOW="\033[0;33m"
-BLUE="\033[0;34m"
-PURPLE="\033[0;35m"
-CYAN="\033[0;36m"
-WHITE="\033[0;37m"
-ORANGE="\033[0;33m"
-LIGHTRED='\033[1;31m'
-BG_GREEN="\[$(tput setab 2 2>/dev/null)\]"
-BG_RED="\[$(tput setab 9 2>/dev/null)\]"
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-BUILD_LOG_FILE="${BUILD_LOG_FILE:-/tmp/${BUILD_NAME}_build.log}"
-BUILD_SCRIPT_SRC_DIR="${BUILD_SCRIPT_SRC_DIR:-$HOME/.local/share/$BUILD_NAME/source}"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MAKE_ARGS="-j$(nproc) "
 CMAKE_ARGS=".. "
@@ -313,7 +326,7 @@ YUM=""
 APT=""
 APK=""
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-BUILD_SRC_URL="${BUILD_SRC_URL:-https://gitlab.com/dwt1/dmenu-distrotube}"
+BUILD_SRC_URL="https://gitlab.com/dwt1/dmenu-distrotube"
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Application Folders
 
